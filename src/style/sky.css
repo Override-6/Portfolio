@@ -1,0 +1,30 @@
+@import "theme/default.css";
+
+.sky {
+    position: relative;
+    background-color: var(--sky-color);
+    color: white;
+    height: 100%;
+    width: 100%;
+}
+
+
+.sky-children {
+    position: absolute;
+    top: 0;
+    height: 0;
+}
+
+.stars-layout, .stars-layout::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 500px;
+    animation: animateStars var(--sky-loop-time) linear infinite;
+}
+
+@keyframes animateStars {
+    to {
+        transform: translate(var(--sky-direction-x), var(--sky-direction-y));
+    }
+}
