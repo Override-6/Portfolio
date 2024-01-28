@@ -26,10 +26,17 @@ function App() {
                 loopMilliseconds: 100000 * BACKGROUND_SKY_TIME_MULTIPLIER,
                 starsRadius: 3
             },
-            ]}>
+        ]}>
 
-            <div id={"main-content"} >
-                {/*{Array(50).fill(<p>THIS IS A SCROLLABLE DIV</p>)}*/}
+            <div id={"main"}>
+                <header id={"content-header"}>
+                    HEADER
+                </header>
+                <div id="content">
+                    <div id="titles">
+                        <h1>BATISTA Maxime's Portfolio</h1>
+                    </div>
+                </div>
             </div>
 
         </Sky>
