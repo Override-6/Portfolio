@@ -9,13 +9,14 @@
 }
 
 
-.sky-children {
+.sky-children, .stars-layer {
     position: absolute;
     top: 0;
-    height: 0;
+    width: 100%;
+    height: 100%;
 }
 
-.stars-layout, .stars-layout::after {
+.stars-layer-bar, .stars-layer-bar::after {
     position: absolute;
     top: 0;
     left: 0;

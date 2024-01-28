@@ -1,91 +1,108 @@
 import {ReactNode, useEffect, useMemo, useRef, useState} from "react";
-import '../style/sky.css'
+import '../style/sky.css';
 import Rand from "rand-seed";
 import {Pos} from "../geo/Pos";
 
 const LAYOUTS_PER_SKY = 10
-const SKY_LOOP_MILLISECONDS = 10000
+
+export interface SkyStarsLayerConfig {
+    starsPer10000pxMin: number
+    starsPer10000pxMax: number
+    loopMilliseconds: number
+    starsRadius: number
+}
 
 export interface SkyProps {
     children?: ReactNode | ReactNode[]
+    layers: SkyStarsLayerConfig[]
 }
 
-interface StarLayout {
+interface StarsBar {
     stars: Pos[]
+    starsRadius: number
     animationStartTime: number
-
 }
 
-export default function Sky({children}: SkyProps) {
+export default function Sky({children, layers}: SkyProps) {
+    return <div className={"sky"}>
+        {layers.map((config, i) => <StarsLayer key={i} {...config}/>)}
+        <div className="sky-children">{children}</div>
+    </div>
+}
+
+function StarsLayer({starsPer10000pxMin, starsPer10000pxMax, loopMilliseconds, starsRadius}: SkyStarsLayerConfig) {
     const divRef = useRef<HTMLDivElement>(null)
-    const [starsLayouts, setStarsLayouts] = useState<StarLayout[]>([])
+    const [bars, setBars] = useState<StarsBar[]>([])
 
     useEffect(() => {
         const div = divRef.current!
 
-        div.style.setProperty('--sky-loop-time', `${SKY_LOOP_MILLISECONDS}ms`)
+        div.style.setProperty('--sky-loop-time', `${loopMilliseconds}ms`)
 
         const handleResize = () => {
             const {width, height} = div.getBoundingClientRect()
-            div.style.setProperty('--sky-direction-x', width + "px")
-            div.style.setProperty('--sky-direction-y', -height + "px")
-            const layouts: StarLayout[] = []
+            const layouts_demi = LAYOUTS_PER_SKY / 2
+
+
+            const barsCommonSeed = `${starsPer10000pxMin}-${starsPer10000pxMax}-${loopMilliseconds}-${starsRadius}`
+
+            const totalWidth = width + (width / layouts_demi) * 1.5
+            const totalHeight = height + (height / layouts_demi) * 1.5
+            div.style.setProperty('--sky-direction-x', totalWidth + "px")
+            div.style.setProperty('--sky-direction-y', -totalHeight + "px")
+            const bars: StarsBar[] = []
 
             // horizontal bars
-            const layouts_demi = LAYOUTS_PER_SKY / 2
             for (let i = 0; i < layouts_demi; i++) {
-                const layoutWidth = width
-                const layoutHeight = (height / layouts_demi)
-                const stars = generateRandomPositions(`${i}h`, 0, height, layoutWidth, layoutHeight, 2, 4)
-                layouts.push({
+                const layoutWidth = totalWidth
+                const layoutHeight = (totalHeight / layouts_demi)
+                const stars = generateRandomPositions(`${i}h-${barsCommonSeed}`, 0, totalHeight, layoutWidth, layoutHeight, starsPer10000pxMin, starsPer10000pxMax)
+                bars.push({
                     stars,
-                    animationStartTime: (SKY_LOOP_MILLISECONDS / layouts_demi) * i
+                    animationStartTime: (loopMilliseconds / layouts_demi) * i,
+                    starsRadius
                 })
             }
             // vertical bars
             for (let i = 0; i < layouts_demi; i++) {
-                const layoutWidth = (width / layouts_demi)
-                const layoutHeight = height
-                const stars = generateRandomPositions(`${i}v`, -layoutWidth, (height / layouts_demi), layoutWidth, layoutHeight, 2, 4)
-                layouts.push({
+                const layoutWidth = (totalWidth / layouts_demi)
+                const layoutHeight = totalHeight + (totalHeight / layouts_demi)
+                const stars = generateRandomPositions(`${i}v-${barsCommonSeed}`, -layoutWidth, 0, layoutWidth, layoutHeight, starsPer10000pxMin, starsPer10000pxMax)
+                bars.push({
                     stars,
-                    animationStartTime: (SKY_LOOP_MILLISECONDS / layouts_demi) * i
+                    animationStartTime: (loopMilliseconds / layouts_demi) * i,
+                    starsRadius
                 })
             }
-            setStarsLayouts(layouts)
+            setBars(bars)
         }
 
         const observer = new ResizeObserver(handleResize)
         observer.observe(div)
 
         return () => observer.disconnect()
-    }, [divRef]);
+    }, [divRef, loopMilliseconds, starsPer10000pxMax, starsPer10000pxMin, starsRadius]);
 
     return (
-        <div ref={divRef} className={"sky"}>
+        <div ref={divRef} className={"stars-layer"}>
             {
-                starsLayouts.map((layout, i) => <StarsLayout
+                bars.map((bar, i) => <StarsLayerBar
                     key={i}
-                    layout={layout}
-                    starsRadius={3}
+                    bar={bar}
                 />)
             }
-
-            <div className={"sky-children"}>
-                {children}
-            </div>
         </div>
     )
 }
 
-function generateRandomPositions(seed: string, startX: number, startY: number, width: number, height: number, countPer10000pxMin: number, countPer10000pxMax: number) {
+function generateRandomPositions(seed: string, startX: number, startY: number, width: number, height: number, countPer10000pxMin: number, countPer10000pxMax: number): Pos[] {
 
     let stars: Pos[] = []
 
     //the amount of stars to generate
     const random = new Rand(seed)
     const amountOfStarsPer10000 = countPer10000pxMin + random.next() * (countPer10000pxMax - countPer10000pxMin)
-    const amountOfStars = (width * height) / 10000 * amountOfStarsPer10000
+    const amountOfStars = ((width * height) / 10000) * amountOfStarsPer10000
 
 
     for (let i = 0; i < amountOfStars; i++) {
@@ -106,19 +123,17 @@ function generateRandomPositions(seed: string, startX: number, startY: number, w
 
 
 interface StarsLayoutProps {
-    layout: StarLayout,
-    starsRadius: number
+    bar: StarsBar,
 }
 
-function StarsLayout({
-                         layout,
-                         starsRadius,
-                     }: StarsLayoutProps) {
+function StarsLayerBar({
+                           bar,
+                       }: StarsLayoutProps) {
 
     const divRef = useRef<HTMLDivElement>(null)
     const boxShadow = useMemo(() =>
-            layout.stars.map(({x, y}) => `${x}px ${y}px white`).join(','),
-        [layout])
+            bar.stars.map(({x, y}) => `${x}px ${y}px white`).join(','),
+        [bar])
 
     useEffect(() => {
         divRef.current!.style.setProperty('--box-shadow', boxShadow)
@@ -127,13 +142,13 @@ function StarsLayout({
     useEffect(() => {
         const div = divRef.current!
         const slide = div.getAnimations()[0]
-        console.log(layout.animationStartTime)
-        slide.currentTime = layout.animationStartTime
-    }, [divRef, layout.animationStartTime]);
+        slide.currentTime = bar.animationStartTime
+    }, [divRef, bar.animationStartTime]);
+
 
     return <div
         ref={divRef}
-        style={{boxShadow, width: starsRadius, height: starsRadius}}
-        className={"stars-layout"}>
+        style={{boxShadow, width: bar.starsRadius, height: bar.starsRadius}}
+        className={"stars-layer-bar"}>
     </div>
 }
