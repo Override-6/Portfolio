@@ -45,6 +45,31 @@
     align-self: start;
 }
 
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 100%;
+        transform: translateY(0);
+    }
+}
+
 #titles h1 {
+    margin: 0;
+    animation: appear 1s;
     font-size: 5vw;
+}
+
+#titles h2 {
+    opacity: 0;
+    animation: appear 1s 1s forwards;
+    text-align: center;
+}
+
+#titles h3 {
+    opacity: 0;
+    animation: appear 1s 2s forwards;
+    text-align: center;
 }

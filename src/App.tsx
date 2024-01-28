@@ -35,6 +35,8 @@ function App() {
                 <div id="content">
                     <div id="titles">
                         <h1>BATISTA Maxime's Portfolio</h1>
+                        <h2>Welcome, take a shit.</h2>
+                        <h3>i mean a sit, sorry</h3>
                     </div>
                 </div>
             </div>
