@@ -1,5 +1,6 @@
 import Sky from "./components/Sky.tsx"
 import './style/main-content.css'
+import Project from "./components/Project.tsx";
 
 
 const BACKGROUND_SKY_TIME_MULTIPLIER = 2
@@ -11,7 +12,7 @@ function App() {
             {
                 starsPer10000pxMin: 0,
                 starsPer10000pxMax: 2,
-                loopMilliseconds: 30000 * BACKGROUND_SKY_TIME_MULTIPLIER,
+                loopMilliseconds: 50000 * BACKGROUND_SKY_TIME_MULTIPLIER,
                 starsRadius: 7
             },
             {
@@ -35,8 +36,11 @@ function App() {
                 <div id="content">
                     <div id="titles">
                         <h1>BATISTA Maxime's Portfolio</h1>
-                        <h2>Welcome, take a shit.</h2>
-                        <h3>i mean a sit, sorry</h3>
+                        <h2>Lorem Ipsum.</h2>
+                        <h3>Dolor sit amet</h3>
+                    </div>
+                    <div id="projects">
+                        <Project/>
                     </div>
                 </div>
             </div>
